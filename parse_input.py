@@ -1,3 +1,7 @@
+#
+# 外部函数
+#
+
 def parse_input(filename: str, type: int):
     """ type:
     1: 第一类.
@@ -5,13 +9,42 @@ def parse_input(filename: str, type: int):
     3: 第三类.
     """
     if type == 1:
-        return input_type1(filename)
+        return type1_input(filename)
     elif type == 2:
-        return input_type2(filename)
+        return type2_input(filename)
     elif type == 3:
-        return input_type3(filename)
+        return type3_input(filename)
 
-def input_type1(filename: str):
+def tonality_to_root_note(tonality: str, pitch: int):
+    MIDDLE = {
+        'C' : 60,
+        'D' : 62,
+        'E' : 64,
+        'F' : 65,
+        'G' : 67,
+        'A' : 69,
+        'B' : 71,
+    }
+    note_name, _ = tonality.split('.')
+    root = MIDDLE[note_name]
+    while root < pitch:
+        root += 12
+    return root
+
+
+def type3_all_tonality(inputs: list, tonality_index: int):
+    ret = []
+    tonality = [l[tonality_index] for l in inputs]
+    for pairs in tonality:
+        for t in pairs:
+            ret.extend([t[0]] * t[1])
+    return ret
+
+#
+# 内部函数
+#
+
+def type1_input(filename: str):
     """第一类.
     [0, 0, 0, 0]|C.MAJOR|[]|[0]|[0, 0, 0, 0]|[31, 33, 38]|[0]
     (1) 采样旋律
@@ -37,16 +70,16 @@ def input_type1(filename: str):
             ret.append([melody_0, tonality_1, chord_2, weight_feature_3, weight_note_4, structure_chord, end_chord])
     return ret
 
-def input_type2_tonality(raw: str):
+def type2_input_tonality(raw: str):
     tonality = []
     raw = raw[2:-2]
     raw_split = raw.split('), (')
     for t in raw_split:
         pair = t.split(', ')
-        tonality.append((pair[0], pair[1]))
+        tonality.append((pair[0], int(pair[1])))
     return tonality
 
-def input_type2(filename: str):
+def type2_input(filename: str):
     """第二类.
     [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[[],[],[],[],[48, 52, 55],[48, 52, 55],后面省略10个和弦]|[96, 208]
     (1) VA标签,持续时长
@@ -61,20 +94,20 @@ def input_type2(filename: str):
             line = line.rstrip()
             line_sep = line.split('|')
             va_time_0 = eval(line_sep[0])
-            tonality_1 = input_type2_tonality(line_sep[1])
+            tonality_1 = type2_input_tonality(line_sep[1])
             rhythm_2 = eval(line_sep[2])
             chord_3 = eval(line_sep[3])
             terminate_4 = eval(line_sep[4])
             ret.append([va_time_0, tonality_1, rhythm_2, chord_3, terminate_4])
     return ret
 
-def input_type3(filename: str):
+def type3_input(filename: str):
     """第三类.
-    [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[(0, 44),(67, 16),(79, 12),(81, 4),(79, 12),(77, 4),(76, 16),(72, 8),(74, 4),(76, 4),(77, 12),(79, 4),(77, 12),(76, 4),(74, 16),(67, 16),(76, 12),(77, 4),(76, 12),(74, 4),(72, 16),(76, 16),(69, 4)]|[96, 208]
+    [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[67, 67, 79, 79, 79, 79, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 90…….]|[96, 208]
     (1) VA标签,持续时长
     (2) (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
     (3) 采样旋律
-    (4) 二维旋律64分音符: (连续出现的旋律1, 出现的次数*4), (连续出现的旋律2, 出现的次数*4)...
+    (4) 一维旋律,64分音符
     (5) 乐句的分割点/和弦终止式的结束点
     """
     ret = []
@@ -83,7 +116,7 @@ def input_type3(filename: str):
             line = line.rstrip()
             line_sep = line.split('|')
             va_time_0 = eval(line_sep[0])
-            tonality_1 = input_type2_tonality(line_sep[1])
+            tonality_1 = type2_input_tonality(line_sep[1])
             rhythm_2 = eval(line_sep[2])
             two_dim_rhythm_3 = eval(line_sep[3])
             terminate_4 = eval(line_sep[4])
