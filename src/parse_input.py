@@ -14,22 +14,22 @@ def parse_input(filename: str, type: int) -> list:
     2: 第二类.
     3: 第三类.
     """
+    print("Reading data ...", end='')
     if type == 1:
         return type1_input(filename)
     elif type == 2:
         return type2_input(filename)
     elif type == 3:
         return type3_input(filename)
+    print("finished")
 
-def type3_concat_all_melody(inputs: list) -> list:
-    """将第三类输入的二维旋律扩展为一维
+def type3_get_all_melody(inputs: list) -> list:
+    """拼接第三类输入中所有的二维旋律
     """
-    ret = []
-    melody = [l[3] for l in inputs]
-    for pairs in melody:
-        for m in pairs:
-            ret.extend([m[0]] * m[1])
-    return ret
+    melody_2d = []
+    for l in inputs:
+        melody_2d.extend(l[3])
+    return melody_2d
 
 def tonality_to_root_note(tonality: str, pitch: int) -> int:
     """获取一个MIDI音符在某调性下的根音
@@ -43,12 +43,14 @@ def tonality_to_root_note(tonality: str, pitch: int) -> int:
         'A' : 69,
         'B' : 71,
     }
-    note_name, _ = tonality.split('.')
-    root = MIDDLE[note_name]
+    note_name, _ = tonality.split('.') # 大/小调不管, 只看根音
+    if len(note_name) == 1:
+        root = MIDDLE[note_name]
+    else:
+        # 有降调, 'B', 如DB.MAJOR 
+        root = MIDDLE[note_name[0]] - 1
     while root > pitch:
         root -= 12
-    # while root < pitch:
-    #     root += 12
     return root
 
 def type3_all_two_dimension_tonality(inputs: list) -> list:
