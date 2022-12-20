@@ -16,11 +16,11 @@ def parse_input(filename: str, type: int) -> list:
     """
     print("Reading data ...", end='')
     if type == 1:
-        return type1_input(filename)
+        return _type1_input(filename)
     elif type == 2:
-        return type2_input(filename)
+        return _type2_input(filename)
     elif type == 3:
-        return type3_input(filename)
+        return _type3_input(filename)
     print("finished")
 
 def type3_get_all_melody(inputs: list) -> list:
@@ -73,16 +73,16 @@ def tonality_2d_to_1d(tonality: list) -> list:
 # 内部函数
 #
 
-def type1_input(filename: str) -> list:
-    """第一类.
-    [0, 0, 0, 0]|C.MAJOR|[]|[0]|[0, 0, 0, 0]|[31, 33, 38]|[0]
-    (1) 采样旋律
-    (2) 调性
-    (3) 和弦
-    (4) 权重特征
-    (5) 权重音
-    (6) 结构和弦
-    (7) 终止和弦
+def _type1_input(filename: str) -> list:
+    """第一类.\n
+    [0, 0, 0, 0]|C.MAJOR|[]|[0]|[0, 0, 0, 0]|[31, 33, 38]|[0]\n
+    1. 采样旋律
+    2. 调性
+    3. 和弦
+    4. 权重特征
+    5. 权重音
+    6. 结构和弦
+    7. 终止和弦
     """
     ret = []
     with open(filename, 'r', encoding='utf-8') as fp:
@@ -99,7 +99,7 @@ def type1_input(filename: str) -> list:
             ret.append([melody_0, tonality_1, chord_2, weight_feature_3, weight_note_4, structure_chord, end_chord])
     return ret
 
-def two_dimension_input_tonality(raw: str) -> list:
+def _two_dimension_input_tonality(raw: str) -> list:
     """解析字符串为二维调性列表
     """
     tonality = []
@@ -110,14 +110,14 @@ def two_dimension_input_tonality(raw: str) -> list:
         tonality.append((pair[0], int(pair[1])))
     return tonality
 
-def type2_input(filename: str) -> list:
-    """第二类.
-    [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[[],[],[],[],[48, 52, 55],[48, 52, 55],后面省略10个和弦]|[96, 208]
-    (1) VA标签,持续时长
-    (2) (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
-    (3) 采样旋律
-    (4) 和弦
-    (5) 乐句的分割点/和弦终止式的结束点
+def _type2_input(filename: str) -> list:
+    """第二类.\n
+    [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[[],[],[],[],[48, 52, 55],[48, 52, 55],后面省略10个和弦]|[96, 208]\n
+    1. VA标签,持续时长
+    2. (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
+    3. 采样旋律
+    4. 和弦
+    5. 乐句的分割点/和弦终止式的结束点
     """
     ret = []
     with open(filename, 'r', encoding='utf-8') as fp:
@@ -125,21 +125,21 @@ def type2_input(filename: str) -> list:
             line = line.rstrip()
             line_sep = line.split('|')
             va_time_0 = eval(line_sep[0])
-            tonality_1 = two_dimension_input_tonality(line_sep[1])
+            tonality_1 = _two_dimension_input_tonality(line_sep[1])
             rhythm_2 = eval(line_sep[2])
             chord_3 = eval(line_sep[3])
             terminate_4 = eval(line_sep[4])
             ret.append([va_time_0, tonality_1, rhythm_2, chord_3, terminate_4])
     return ret
 
-def type3_input(filename: str) -> list:
-    """第三类.
-    [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[(67, 2)，(79, 4)，(81, 12)……..]|[96, 208]
-    (1) VA标签,持续时长
-    (2) (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
-    (3) 采样旋律
-    (4) 二维旋律,64分音符(?待定)
-    (5) 乐句的分割点/和弦终止式的结束点
+def _type3_input(filename: str) -> list:
+    """第三类.\n
+    [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[(67, 2)，(79, 4)，(81, 12)……..]|[96, 208]\n
+    1. VA标签,持续时长
+    2. (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
+    3. 采样旋律
+    4. 二维旋律,64分音符(?待定)
+    5. 乐句的分割点/和弦终止式的结束点
     """
     ret = []
     with open(filename, 'r', encoding='utf-8') as fp:
@@ -147,7 +147,7 @@ def type3_input(filename: str) -> list:
             line = line.rstrip()
             line_sep = line.split('|')
             va_time_0 = eval(line_sep[0])
-            tonality_1 = two_dimension_input_tonality(line_sep[1])
+            tonality_1 = _two_dimension_input_tonality(line_sep[1])
             rhythm_2 = eval(line_sep[2])
             two_dim_rhythm_3 = eval(line_sep[3])
             terminate_4 = eval(line_sep[4])
