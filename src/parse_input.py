@@ -23,8 +23,20 @@ def parse_input(filename: str, type: int) -> list:
         return _type3_input(filename)
     print("finished")
 
+def type2_get_all_chord(inputs: list) -> list:
+    """拼接第二类输入中所有的和弦
+
+    e.g: [[], [], [], [], [48, 52, 55], [48, 52, 55], [48, 52, 55], [48, 52, 55], [50, 53, 57], [50, 53, 57], [55, 59, 62], [55, 59, 62], [48, 52, 55], [48, 52, 55], [48, 52, 55], [48, 52, 55]]
+    """
+    chord_2d = []
+    for l in inputs:
+        chord_2d.append(l[3])
+    return chord_2d
+
 def type3_get_all_melody(inputs: list) -> list:
     """拼接第三类输入中所有的二维旋律
+
+    e.g: [(0,44), (67,16), (79,12), (81,4), (79,12), (77,4), (76,16), (72,8), (74,4), (76,4), (77,12), (79,4), (77,12), (76,4), (74,16), (67,16), (76,12), (77,4), (76,12), (74,4), (72,16), (76,16), (69,4)]
     """
     melody_2d = []
     for l in inputs:
@@ -61,8 +73,8 @@ def type3_all_two_dimension_tonality(inputs: list) -> list:
         tonality.extend(one_line[1])
     return tonality
 
-def tonality_2d_to_1d(tonality: list) -> list:
-    """将第二类和第三类数据中的二维(调性,出现次数)的列表展开为一维
+def expand_2d_to_1d(tonality: list) -> list:
+    """将第二类和第三类数据中的二维列表展开为一维
     """
     ret = []
     for t in tonality:
