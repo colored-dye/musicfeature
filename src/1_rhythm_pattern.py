@@ -8,15 +8,18 @@ from parse_input import (
 
 
 def rhythm_pattern(tonalities: list, melodies: list, n: int) -> list:
-    """节奏模式\n
+    """节奏模式
+
     Input:
         - 一维调性: ['C.MAJOR', 'C.MAJOR', ...]
         - 二维旋律: [(11, 4), (5, 14), ...]
-        - n: n分音符. 如64分音符, 则n=64.\n
+        - n: n分音符. 如64分音符, 则n=64.
+
     Output:
-        旋律中每个音符的节奏模式列表.\n
+        旋律中每个音符的节奏模式列表.
+
     某个音符的节奏模式:
-        [相对音高, 起始位置, 持续时长(单位: 拍)]
+        (相对音高, 起始位置, 持续时长(单位: 拍))
     """
     rp = []
     for melody in melodies:
@@ -25,7 +28,9 @@ def rhythm_pattern(tonalities: list, melodies: list, n: int) -> list:
             rp_0_relative_pitch = m - tonality_to_root_note(tonalities[len(rp)], m)
             rp_1_start_position = len(rp)
             rp_2_duration = t / n
-            rp.append([rp_0_relative_pitch, rp_1_start_position, rp_2_duration])
+            rp.append(
+                (rp_0_relative_pitch, rp_1_start_position, rp_2_duration)
+            )
 
     return rp
 
