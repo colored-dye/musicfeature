@@ -5,10 +5,13 @@ from parse_input import (
     expand_2d_to_1d,
     type2_get_all_chord,
     type3_get_all_melody,
-    
+
 )
 
 import numpy as np
+import matplotlib.pyplot as plt
+
+INVALID_CHORD_NOTE = 114514
 
 def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, list]]:
     """音乐轮廓
@@ -31,7 +34,6 @@ def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, lis
 
     TODO: 曲式结构划分?
     """
-    mc = []
 
     melodies_1d = expand_2d_to_1d(melodies_2d)
     partitions = music_partition(chords, melodies_1d)
@@ -47,9 +49,32 @@ def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, lis
         min_chord_note = min_note_in_chord_sequence(chords)
         min_melody_note = np.min(melodies)
         max_melody_note = np.max(melodies)
+
+        if min_chord_note == INVALID_CHORD_NOTE:
+            min_chord_note = 0
         LL.append(min_melody_note - min_chord_note)
         LH.append(max_melody_note - min_chord_note)
-    return mc
+
+    for i in range(len(LL)):
+        if i == 0:
+            dLL.append(0)
+            dLH.append(0)
+        else:
+            dLL.append(LL[i] - LL[i-1])
+            dLH.append(LH[i] - LH[i-1])
+
+    for i in range(len(dLL)):
+        if i == 0:
+            ddLL.append(0)
+            ddLH.append(0)
+        else:
+            ddLL.append(dLL[i] - dLL[i-1])
+            ddLH.append(dLH[i] - dLH[i-1])
+
+    return [
+        (LL, dLL, ddLL),
+        (LH, dLH, ddLH),
+    ]
 
 def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 64) -> Tuple[list]:
     """将和弦和旋律按照4小节为粒度计算最高音和最低音.
@@ -64,12 +89,11 @@ def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 64) -> T
         - melody_n: 分割粒度的旋律音符个数
     """
     partition = []
-    print("len(melody): %d"%len(melodies_1d))
-    if len(melodies_1d) % melody_n != 0:
+    if len(melodies_1d) % melody_n == 0:
         for i in range(len(melodies_1d)//melody_n):
             partition.append(
                 (
-                    chords_1d[i*melody_n//16:(i+1)*melody_n//16], 
+                    chords_1d[i*melody_n//16:(i+1)*melody_n//16],
                     melodies_1d[i*melody_n:(i+1)*melody_n]
                 )
             )
@@ -81,18 +105,22 @@ def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 64) -> T
 def min_note_in_chord_sequence(chords) -> int:
     """和弦序列中最低的音
     """
-    ret = 114514
+    ret = INVALID_CHORD_NOTE
     for c in chords:
-        ret = min(ret, c[0])
+        if len(c) != 0:
+            ret = min(ret, c[0])
     return ret
-
 
 if __name__ == "__main__":
     input_2 = parse_input("../data/2.txt", 2)
     input_3 = parse_input("../data/3.txt", 3)
 
+    input_2 = [input_2[0]]
+    input_3 = [input_3[0]]
+
     chord_all = type2_get_all_chord(input_2)
     melody_all_2d = type3_get_all_melody(input_3)
 
+    mc = music_contour(chord_all, melody_all_2d)
     with open("../music_contour.txt", "w", encoding='utf-8') as fp:
-        fp.write(str(music_contour(chord_all, melody_all_2d)))
+        fp.write(str(mc))

@@ -14,14 +14,16 @@ def parse_input(filename: str, type: int) -> list:
     2: 第二类.
     3: 第三类.
     """
-    print("Reading data ...", end='')
+    print("Reading data from `%s' ..." % filename, end='')
+    data = None
     if type == 1:
-        return _type1_input(filename)
+        data = _type1_input(filename)
     elif type == 2:
-        return _type2_input(filename)
+        data = _type2_input(filename)
     elif type == 3:
-        return _type3_input(filename)
+        data = _type3_input(filename)
     print("finished")
+    return data
 
 def type2_get_all_chord(inputs: list) -> list:
     """拼接第二类输入中所有的和弦
@@ -30,7 +32,7 @@ def type2_get_all_chord(inputs: list) -> list:
     """
     chord_2d = []
     for l in inputs:
-        chord_2d.append(l[3])
+        chord_2d.extend(l[3])
     return chord_2d
 
 def type3_get_all_melody(inputs: list) -> list:
@@ -59,7 +61,7 @@ def tonality_to_root_note(tonality: str, pitch: int) -> int:
     if len(note_name) == 1:
         root = MIDDLE[note_name]
     else:
-        # 有降调, 'B', 如DB.MAJOR 
+        # 有降调, 'B', 如DB.MAJOR
         root = MIDDLE[note_name[0]] - 1
     while root > pitch:
         root -= 12
@@ -87,9 +89,9 @@ def expand_2d_to_1d(tonality: list) -> list:
 
 def _type1_input(filename: str) -> list:
     """第一类.
-    
+
     [0, 0, 0, 0]|C.MAJOR|[]|[0]|[0, 0, 0, 0]|[31, 33, 38]|[0]
-    
+
     1. 采样旋律
     2. 调性
     3. 和弦
@@ -126,9 +128,9 @@ def _two_dimension_input_tonality(raw: str) -> list:
 
 def _type2_input(filename: str) -> list:
     """第二类.
-    
+
     [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[[],[],[],[],[48, 52, 55],[48, 52, 55],后面省略10个和弦]|[96, 208]
-    
+
     1. VA标签,持续时长
     2. (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
     3. 采样旋律
@@ -150,9 +152,9 @@ def _type2_input(filename: str) -> list:
 
 def _type3_input(filename: str) -> list:
     """第三类.
-    
+
     [((0, 0), 256)]|[(C.MAJOR, 32), (D.MINOR, 16), (C.MAJOR, 208)]|[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 67, 67, 67, 67, 79, 79, 79, 81, 79, 79, 79, 77, 76, 76, 76, 76, 72, 72, 74, 76, 77, 77, 77, 79, 77, 77, 77, 76, 74, 74, 74, 74, 67, 67, 67, 67, 76, 76, 76, 77, 76, 76, 76, 74, 72, 72, 72, 72, 76, 76, 76, 76, 69]|[(67, 2)，(79, 4)，(81, 12)……..]|[96, 208]
-    
+
     1. VA标签,持续时长
     2. (调性1,连续出现次数*16), (调性2,连续出现次数*16), ...
     3. 采样旋律
