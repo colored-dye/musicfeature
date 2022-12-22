@@ -65,6 +65,8 @@ def tonality_to_root_note(tonality: str, pitch: int) -> int:
         root = MIDDLE[note_name[0]] - 1
     while root > pitch:
         root -= 12
+    while pitch - root >= 12:
+        root += 12
     return root
 
 def type3_all_two_dimension_tonality(inputs: list) -> list:

@@ -9,18 +9,19 @@ from parse_input import (
 )
 
 import numpy as np
-# import matplotlib.pyplot as plt
 
 INVALID_CHORD_NOTE = 114514
 
 def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, list]]:
     """音乐轮廓
 
-    以小节为单位确定旋律线和低音线的轮廓，使用极大/小值及其对应的一阶导数、二阶导数描述
+    以小节为单位确定旋律线和低音线的轮廓，使用极大/小值及其对应的一阶导数、二阶导数描述.
 
     int LL[]: 每小节的最低音, int LH[]: 每小节的最高音.
     d(LL) = [LL[i] - LL[i-1]], d(LH) = [LH[i] - LH[i-1]]
     dd(LL) = [d(LL)[i] - d(LL)[i-1]], dd(LH) = [d(LH)[i] - d(LH)[i-1]]
+
+    e.g: [([0, 0, 28, 24, 24, 12, 24, 21], [0, 0, 28, -4, 0, -12, 12, -3], [0, 0, 28, -32, 4, -12, 24, -15]), ([0, 79, 33, 29, 29, 21, 29, 28], [0, 79, -46, -4, 0, -8, 8, -1], [0, 79, -125, 42, 4, -8, 16, -9])]
 
     Input:
         - chords: 来自第二类数据的和弦序列
@@ -31,8 +32,6 @@ def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, lis
             (LL, d(LL), dd(LL)),
             (LH, d(LH), dd(LH)),
         ]
-
-    TODO: 曲式结构划分?
     """
 
     # 二维旋律转换为一维旋律
@@ -81,14 +80,14 @@ def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, lis
         (LH, dLH, ddLH),
     ]
 
-def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 64) -> Tuple[list]:
+def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 32) -> Tuple[list]:
     """将和弦和旋律按照4小节为粒度计算最高音和最低音.
 
     频率采样频率为64分音符的时值. 和弦采样频率是旋律采样频率的1/16.
 
     4小节为16拍, 对应256个旋律音符和16个和弦.
 
-    日后可以替换此函数的逻辑, 根据乐理分割.
+    TODO: 曲式结构划分?
 
     Input:
         - chords_1d: 第二类数据的和弦序列
@@ -129,6 +128,10 @@ if __name__ == "__main__":
     input_2 = parse_input("../data/2.txt", 2)
     input_3 = parse_input("../data/3.txt", 3)
 
+    # 只看前256
+    # input_2 = input_2[:1]
+    # input_3 = input_3[:1]
+
     # 提取和弦和旋律
     chord_all = type2_get_all_chord(input_2)
     melody_all_2d = type3_get_all_melody(input_3)
@@ -143,6 +146,7 @@ if __name__ == "__main__":
         fp.write(str(mc))
 
     # 作图，展示LL和LH的变化趋势
+    # import matplotlib.pyplot as plt
     # plt.figure()
     # plt.plot(mc[0][0])
     # plt.plot(mc[1][0])

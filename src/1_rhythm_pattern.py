@@ -16,22 +16,22 @@ def rhythm_pattern(tonalities_2d: list, melodies_2d: list) -> list:
 
     Output:
         旋律中每个音符的节奏模式列表.
-        e.g: [(0, 0, 44), (0, 1, 44), (0, 2, 44), (0, 3, 44), (0, 4, 44), (0, 5, 44), (0, 6, 44), (0, 7, 44), (0, 8, 44),...]
+        e.g: [(0, 0, 44), (7, 44, 16), (7, 60, 12), (9, 72, 4), (7, 76, 12), (5, 88, 4), (4, 92, 16), (0, 108, 8), (2, 116, 4), (4, 120, 4), (5, 124, 12), (7, 136, 4), (5, 140, 12), (4, 152, 4), (2, 156, 16), (7, 172, 16), (4, 188, 12), (5, 200, 4), (4, 204, 12), (2, 216, 4), (0, 220, 16), (4, 236, 16), (9, 252, 4)]
 
-    某个旋律音符的节奏模式:
+    某旋律音符的节奏模式:
         (相对音高, 起始位置, 持续时长).
     """
     tonality_all_1d = expand_2d_to_1d(tonalities_2d)
     rp = []
+    cnt = 0
     for melody in melodies_2d:
         m, t = melody
-        for _ in range(t):
-            rp_0_relative_pitch = m - tonality_to_root_note(tonality_all_1d[len(rp)], m)
-            rp_1_start_position = len(rp)
-            rp_2_duration = t
-            rp.append(
-                (rp_0_relative_pitch, rp_1_start_position, rp_2_duration)
-            )
+
+        rp.append(
+            (m - tonality_to_root_note(tonality_all_1d[cnt], m), cnt, t)
+        )
+
+        cnt += t
 
     return rp
 
