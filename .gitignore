@@ -1,4 +1,2 @@
 __pycache__/
-out
-rhythm_pattern.txt
-music_contour.txt
+output/

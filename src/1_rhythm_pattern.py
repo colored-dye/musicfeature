@@ -38,8 +38,13 @@ def rhythm_pattern(tonalities_2d: list, melodies_2d: list) -> list:
 if __name__ == "__main__":
     input_3 = parse_input("../data/3.txt", 3)
 
+    # 提取调性和旋律
     tonality_all_2d = type3_all_two_dimension_tonality(input_3)
     melody_all_2d = type3_get_all_melody(input_3)
 
-    with open("../rhythm_pattern.txt", "w", encoding='utf-8') as fp:
+    # 将节奏模式的文本形式写入文件
+    import os
+    if not os.path.exists("../output"):
+        os.makedirs("../output")
+    with open("../output/rhythm_pattern.txt", "w", encoding='utf-8') as fp:
         fp.write(str(rhythm_pattern(tonality_all_2d, melody_all_2d)))
