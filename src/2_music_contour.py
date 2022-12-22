@@ -101,7 +101,7 @@ def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 32) -> T
     print("旋律长度: %d" % len(melodies_1d))
     partition_number = len(melodies_1d)//melody_n
     if len(melodies_1d) % melody_n != 0:
-        print("切分粒度不能被整除! 去掉尾巴就可以吃了~")
+        print("不能被切分粒度(%d)整除! 去掉尾巴就可以吃了~" % melody_n)
         melodies_1d = melodies_1d[:partition_number*melody_n]
         print("旋律长度更新为: %d" % len(melodies_1d))
 
@@ -146,11 +146,11 @@ if __name__ == "__main__":
         fp.write(str(mc))
 
     # 作图，展示LL和LH的变化趋势
-    # import matplotlib.pyplot as plt
-    # plt.figure()
-    # plt.plot(mc[0][0])
-    # plt.plot(mc[1][0])
-    # fig = plt.gcf()
-    # if not os.path.exists("../imgs"):
-    #     os.makedirs("../imgs")
-    # fig.savefig("../imgs/LL_LH.png", format='png', dpi=600)
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.plot(mc[0][0])
+    plt.plot(mc[1][0])
+    fig = plt.gcf()
+    if not os.path.exists("../imgs"):
+        os.makedirs("../imgs")
+    fig.savefig("../imgs/LL_LH.png", format='png', dpi=600)
