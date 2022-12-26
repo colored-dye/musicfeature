@@ -12,109 +12,52 @@ import numpy as np
 
 INVALID_CHORD_NOTE = 114514
 
-def music_contour(chords: list, melodies_2d: list) -> List[Tuple[list, list, list]]:
+def music_contour(melodies_2d: list) -> List[Tuple[list, list, list]]:
     """音乐轮廓
 
-    以小节为单位确定旋律线和低音线的轮廓，使用极大/小值及其对应的一阶导数、二阶导数描述.
+    用最高/低点, 整体上升/下降趋势, 凹凸性描述.
 
-    int LL[]: 每小节的最低音, int LH[]: 每小节的最高音.
-    d(LL) = [LL[i] - LL[i-1]], d(LH) = [LH[i] - LH[i-1]]
-    dd(LL) = [d(LL)[i] - d(LL)[i-1]], dd(LH) = [d(LH)[i] - d(LH)[i-1]]
-
-    e.g: [([0, 0, 28, 24, 24, 12, 24, 21], [0, 0, 28, -4, 0, -12, 12, -3], [0, 0, 28, -32, 4, -12, 24, -15]), ([0, 79, 33, 29, 29, 21, 29, 28], [0, 79, -46, -4, 0, -8, 8, -1], [0, 79, -125, 42, 4, -8, 16, -9])]
+    e.g: [(101, 0), 1, 1]
 
     Input:
-        - chords: 来自第二类数据的和弦序列
         - melodies: 来自第三类数据的旋律二维序列
 
     Output:
-        [
-            (LL, d(LL), dd(LL)),
-            (LH, d(LH), dd(LH)),
-        ]
+        [最高/低点, 整体上升(1)/下降(-1), 凹(-1)/凸(1)/非凹非凸(0)]
     """
 
     # 二维旋律转换为一维旋律
     melodies_1d = expand_2d_to_1d(melodies_2d)
-    # 分段
-    partitions = music_partition(chords, melodies_1d)
-    LL = []
-    LH = []
-    dLL = []
-    dLH = []
-    ddLL = []
-    ddLH = []
-    for p in partitions:
-        chords = p[0]
-        melodies = p[1]
-        min_chord_note = min_note_in_chord_sequence(chords)
-        min_melody_note = np.min(melodies)
-        max_melody_note = np.max(melodies)
 
-        # 可能出现一大串空和弦, 令其最低音为默认值0
-        if min_chord_note == INVALID_CHORD_NOTE:
-            min_chord_note = 0
-        LL.append(min_melody_note - min_chord_note)
-        LH.append(max_melody_note - min_chord_note)
+    # 最高/低点
+    melody_max = np.max(melodies_1d)
+    melody_min = np.min(melodies_1d)
 
-    # 一阶导数
-    for i in range(len(LL)):
-        if i == 0:
-            dLL.append(0)
-            dLH.append(0)
+    # 整体趋势
+    if melodies_1d[0] <= melodies_1d[-1]:
+        trend = 1
+    else:
+        trend = -1
+
+    # 凹凸性
+    if melody_max == melodies_1d[0] or \
+            melody_max == melodies_1d[-1] or \
+            melody_min == melodies_1d[0] or \
+            melody_min == melodies_1d[-1]:
+        if melody_max > melodies_1d[0] and melody_max > melodies_1d[-1]:
+            # 凸
+            convex = 1
+        elif melody_min < melodies_1d[0] and melody_min < melodies_1d[-1]:
+            # 凹
+            convex = -1
         else:
-            dLL.append(LL[i] - LL[i-1])
-            dLH.append(LH[i] - LH[i-1])
+            convex = 0
+    else:
+        convex = 0
+    
+    return [(melody_max, melody_min), trend, convex]    
 
-    # 二阶导数
-    for i in range(len(dLL)):
-        if i == 0:
-            ddLL.append(0)
-            ddLH.append(0)
-        else:
-            ddLL.append(dLL[i] - dLL[i-1])
-            ddLH.append(dLH[i] - dLH[i-1])
-
-    return [
-        (LL, dLL, ddLL),
-        (LH, dLH, ddLH),
-    ]
-
-def music_partition(chords_1d: list, melodies_1d: list, melody_n: int = 32) -> Tuple[list]:
-    """将和弦和旋律按照4小节为粒度计算最高音和最低音.
-
-    频率采样频率为64分音符的时值. 和弦采样频率是旋律采样频率的1/16.
-
-    4小节为16拍, 对应256个旋律音符和16个和弦.
-
-    TODO: 曲式结构划分?
-
-    Input:
-        - chords_1d: 第二类数据的和弦序列
-        - melodies_2d: 第三类数据的旋律一维序列
-        - melody_n: 分割粒度的旋律音符个数
-
-    Output: 输出(和弦, 旋律)
-        [(chords, melodies), ...]
-    """
-    partition = []
-    print("旋律长度: %d" % len(melodies_1d))
-    partition_number = len(melodies_1d)//melody_n
-    if len(melodies_1d) % melody_n != 0:
-        print("不能被切分粒度(%d)整除! 去掉尾巴就可以吃了~" % melody_n)
-        melodies_1d = melodies_1d[:partition_number*melody_n]
-        print("旋律长度更新为: %d" % len(melodies_1d))
-
-    for i in range(partition_number):
-        partition.append(
-            (
-                chords_1d[i*melody_n//16:(i+1)*melody_n//16],
-                melodies_1d[i*melody_n:(i+1)*melody_n]
-            )
-        )
-
-    return partition
-
+    
 def min_note_in_chord_sequence(chords) -> int:
     """和弦序列中最低的音
     """
@@ -125,7 +68,7 @@ def min_note_in_chord_sequence(chords) -> int:
     return ret
 
 if __name__ == "__main__":
-    input_2 = parse_input("../data/2.txt", 2)
+    # input_2 = parse_input("../data/2.txt", 2)
     input_3 = parse_input("../data/3.txt", 3)
 
     # 只看前256
@@ -133,10 +76,10 @@ if __name__ == "__main__":
     # input_3 = input_3[:1]
 
     # 提取和弦和旋律
-    chord_all = type2_get_all_chord(input_2)
+    # chord_all = type2_get_all_chord(input_2)
     melody_all_2d = type3_get_all_melody(input_3)
 
-    mc = music_contour(chord_all, melody_all_2d)
+    mc = music_contour(melody_all_2d)
 
     # 将音乐旋律的文本形式写入文件
     import os
@@ -146,11 +89,11 @@ if __name__ == "__main__":
         fp.write(str(mc))
 
     # 作图，展示LL和LH的变化趋势
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.plot(mc[0][0])
-    plt.plot(mc[1][0])
-    fig = plt.gcf()
-    if not os.path.exists("../imgs"):
-        os.makedirs("../imgs")
-    fig.savefig("../imgs/LL_LH.png", format='png', dpi=600)
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.plot(mc[0][0])
+    # plt.plot(mc[1][0])
+    # fig = plt.gcf()
+    # if not os.path.exists("../imgs"):
+    #     os.makedirs("../imgs")
+    # fig.savefig("../imgs/LL_LH.png", format='png', dpi=600)
